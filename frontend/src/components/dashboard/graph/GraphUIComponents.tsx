@@ -1,14 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { Layers, FileCode2, X, GitBranch } from "lucide-react"
+import { Layers, FileCode2, GitBranch } from "lucide-react"
 import type { TooltipData } from "./useCytoscape"
 
 // ── Node Tooltip ──────────────────────────────────────────────────────────────
 export function GraphTooltip({
   tip,
-  onClose,
 }: {
   tip: TooltipData
-  onClose: () => void
 }) {
   return (
     <AnimatePresence>
