@@ -105,7 +105,7 @@ export function FolderTree({ nodes, collapsed, onToggle, onFocus }: FolderTreePr
     .sort((a, b) => (a.id > b.id ? 1 : -1))
 
   return (
-    <div className="flex flex-col gap-0.5 overflow-y-auto max-h-[500px] pr-1 custom-scrollbar">
+    <div className="flex-1 flex flex-col gap-0.5 overflow-y-auto h-full pr-1 custom-scrollbar">
       {topFolders.map((folder) => (
         <FolderItem
           key={folder.id}
