@@ -44,6 +44,18 @@ async def analyze_repo(request: AnalyzeRequest):
         print("🔗 Step 1: Cloning repository...", flush=True)
         clone_repository(request.repo_url, repo_path)
         print("✅ Cloning complete.", flush=True)
+
+        # 2.5 Safety Check: Count files to prevent OOM on free tier
+        file_count = 0
+        for root, dirs, files in os.walk(repo_path):
+            file_count += len(files)
+        
+        print(f"📁 Total files found: {file_count}", flush=True)
+        if file_count > 300:
+            raise HTTPException(
+                status_code=413, 
+                detail=f"Repository too large ({file_count} files). Pulse free-tier limit is 300 files. Please try a smaller project."
+            )
         
         # 3. Analyze dependencies (run dependency-cruiser)
         print("📊 Step 2: Analyzing dependencies (this may take a minute)...", flush=True)
