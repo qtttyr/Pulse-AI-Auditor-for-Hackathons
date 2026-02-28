@@ -175,11 +175,15 @@ function CodeGraph3D() {
               linkWidth={(link: GraphLinkObject) => (link.weight ?? 1) * 0.5}
               onNodeClick={(node: GraphNodeObject) => {
                 const distance = 80;
-                const distRatio = 1 + distance/Math.hypot(node.x??0, node.y??0, node.z??0);
+                const nx = node.x ?? 0;
+                const ny = node.y ?? 0;
+                const nz = node.z ?? 0;
+                const distRatio = 1 + distance / Math.hypot(nx, ny, nz);
+                
                 if (graphRef.current) {
                   graphRef.current.cameraPosition(
-                    { x: (node.x??0) * distRatio, y: (node.y??0) * distRatio, z: (node.z??0) * distRatio },
-                    node as unknown as FGNodeObject,
+                    { x: nx * distRatio, y: ny * distRatio, z: nz * distRatio },
+                    { x: nx, y: ny, z: nz },
                     3000
                   );
                 }
