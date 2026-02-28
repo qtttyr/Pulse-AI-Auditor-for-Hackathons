@@ -12,10 +12,15 @@ from app.services.openrouter import analyze_with_ai
 
 app = FastAPI(title="Pulse AI API")
 
-# Enable CORS for frontend
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://pulse-aiauditor.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

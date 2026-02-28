@@ -165,7 +165,7 @@ function CodeGraphFlow() {
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-[#020617] selection:bg-sky-500/30">
       {/* ── Sidebar: Folders & Controls ── */}
-      <aside className="relative z-20 flex w-72 shrink-0 flex-col border-r border-slate-800/40 bg-[#020617]/95 backdrop-blur-3xl shadow-2xl">
+      <aside className="relative z-40 flex w-72 shrink-0 flex-col border-r border-slate-800/40 bg-[#020617]/95 backdrop-blur-3xl shadow-2xl">
         <div className="flex flex-1 flex-col p-6 overflow-hidden">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
