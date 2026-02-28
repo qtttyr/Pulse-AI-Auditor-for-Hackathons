@@ -1,0 +1,39 @@
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Distribution
+dist/
+build/
+.next/
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+*.env
+secrets.json
+auth_token.txt
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Deployment
+.vercel/
+.netlify/
