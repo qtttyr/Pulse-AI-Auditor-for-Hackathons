@@ -46,8 +46,8 @@ function FolderItem({
   onFocus: (id: string) => void
 }) {
   const isCollapsed = collapsed.has(folder.id)
-  const children = nodes.filter((n) => n.parentNode === folder.id && n.type !== "group")
-  const subFolders = nodes.filter((n) => n.parentNode === folder.id && n.type === "group")
+  const children = nodes.filter((n) => n.parentId === folder.id && n.type !== "group" && n.type !== "folder")
+  const subFolders = nodes.filter((n) => n.parentId === folder.id && (n.type === "group" || n.type === "folder"))
   const totalChildren = children.length + subFolders.length
 
   return (
@@ -101,7 +101,7 @@ function FolderItem({
 
 export function FolderTree({ nodes, collapsed, onToggle, onFocus }: FolderTreeProps) {
   const topFolders = nodes
-    .filter((n) => n.type === "group" && !n.parentNode)
+    .filter((n) => (n.type === "group" || n.type === "folder") && !n.parentId)
     .sort((a, b) => (a.id > b.id ? 1 : -1))
 
   return (

@@ -1,54 +1,22 @@
-import { useMemo, useEffect, useState, useCallback } from "react"
+import { useEffect, useMemo, useCallback } from "react"
 import { 
   ReactFlow,
   Background, 
   Controls, 
   useNodesState, 
   useEdgesState, 
-  type Node, 
-  type Edge, 
-  type EdgeProps, 
-  BaseEdge, 
-  getBezierPath, 
   ConnectionLineType,
-  MarkerType,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { useProjectStore } from "@/store/projectStore"
-import { getExtColor, getExt } from "./graph/graphConstants"
-import { getLayoutedElements } from "./graph/flowLayout"
 import { FileNode, FolderNode } from "./graph/FlowNodes"
+import { ProjectsSidebar } from "./ProjectsSidebar"
 import { FolderTree } from "./graph/FolderTree"
 import { GraphLegend, GraphStatsBar } from "./graph/GraphUIComponents"
+import { useGraphElements } from "./graph/useGraphElements"
+import { CustomEdge } from "./graph/CustomEdge"
 import { motion } from "framer-motion"
 import { FileCode2, LayoutDashboard } from "lucide-react"
-
-// ── Custom Edge ─────────────────────────────────────────────────────────────
-const CustomEdge = ({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, markerEnd }: EdgeProps) => {
-  const [edgePath] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  })
-
-  return (
-    <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={{ ...style, stroke: "rgba(56, 189, 248, 0.45)", strokeWidth: 1.5 }} />
-      <BaseEdge 
-        path={edgePath} 
-        style={{ 
-          ...style, 
-          stroke: "rgba(56, 189, 248, 0.2)", 
-          strokeWidth: 4, 
-          filter: "blur(4px)" 
-        }} 
-      />
-    </>
-  )
-}
 
 const nodeTypes = {
   file: FileNode,
@@ -60,101 +28,38 @@ const edgeTypes = {
 }
 
 function CodeGraphFlow() {
-  const { graph } = useProjectStore()
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const store = useProjectStore()
+  const project = store.getActiveProject()
+  const graph = project?.graph
+  const collapsed = useMemo(() => project?.collapsedFolders ?? new Set<string>(), [project])
 
-  // ── Toggle Logic ──────────────────────────────────────────────────────────
+  // 1. Calculate expanded folders based on store status
+  const expandedFolders = useMemo(() => {
+    if (!graph) return new Set<string>()
+    const expanded = new Set<string>()
+    for (const node of graph.nodes) {
+      if ((node.type === "group" || node.type === "folder") && !collapsed.has(node.id)) {
+        expanded.add(node.id)
+      }
+    }
+    return expanded
+  }, [graph, collapsed])
+
   const toggleFolder = useCallback((id: string) => {
-    setExpandedFolders((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
+    if (!project) return
+    store.toggleFolder(project.id, id)
+  }, [project, store])
 
-  // ── Prepare React Flow Elements ─────────────────────────────────────────────
-  const initialElements = useMemo(() => {
-    if (!graph) return { nodes: [], edges: [] }
+  const layouted = useGraphElements(graph, expandedFolders, toggleFolder)
 
-    const visibleNodeIds = new Set<string>()
-    const nodesInStore = graph.nodes
-    const edgesInStore = graph.edges
+  const [nodes, setNodes, onNodesChange] = useNodesState(layouted.nodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layouted.edges)
 
-    // 1. Identify which folder/nodes are visible
-    // A node is visible if:
-    // - It has no parent
-    // - OR its parent is both visible AND expanded
-    
-    // Sort nodes to process top-down (folders without parentNode first)
-    const sortedNodes = [...nodesInStore].sort((a,b) => {
-      if (!a.parentNode && b.parentNode) return -1
-      if (a.parentNode && !b.parentNode) return 1
-      return 0
-    })
-
-    const rfNodes: Node[] = []
-    
-    sortedNodes.forEach((n) => {
-      const isFolder = n.type === "group"
-      
-      // Top-level folders are always visible
-      let isVisible = !n.parentNode
-      
-      // If it has a parent, check if parent is visible AND expanded
-      if (n.parentNode) {
-         isVisible = visibleNodeIds.has(n.parentNode) && expandedFolders.has(n.parentNode)
-      }
-
-      if (isVisible) {
-        visibleNodeIds.add(n.id)
-        
-        // @ts-expect-error - backend data mapping
-        const label = n.data?.label || n.label || n.id.split("/").pop() || ""
-        const color = isFolder ? "transparent" : getExtColor(label)
-        const ext = isFolder ? "" : getExt(label)
-        
-        const childCount = nodesInStore.filter(node => node.parentNode === n.id).length
-
-        rfNodes.push({
-          id: n.id,
-          type: isFolder ? "folder" : "file",
-          data: { 
-            label, 
-            color, 
-            ext, 
-            isExpanded: expandedFolders.has(n.id),
-            childCount,
-            onToggle: () => toggleFolder(n.id)
-          },
-          position: { x: 0, y: 0 }, // Dagre will override this
-        })
-      }
-    })
-
-    // 2. Filter edges to only connect visible nodes
-    const rfEdges: Edge[] = edgesInStore
-      .filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
-      .map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        type: "custom",
-        animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#38bdf8" },
-      }))
-
-    return getLayoutedElements(rfNodes, rfEdges)
-  }, [graph, expandedFolders, toggleFolder])
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialElements.nodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialElements.edges)
-
-  // Sync elements when graph or state changes
+  // 2. React to layout changes
   useEffect(() => {
-    setNodes(initialElements.nodes)
-    setEdges(initialElements.edges)
-  }, [initialElements, setNodes, setEdges])
+    setNodes(layouted.nodes)
+    setEdges(layouted.edges)
+  }, [layouted, setNodes, setEdges])
 
   const stats = {
     nodes: nodes.filter(n => n.type === "file").length,
@@ -164,6 +69,9 @@ function CodeGraphFlow() {
 
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-[#020617] selection:bg-sky-500/30">
+      {/* ── Sidebar: Projects ── */}
+      <ProjectsSidebar />
+
       {/* ── Sidebar: Folders & Controls ── */}
       <aside className="relative z-40 flex w-72 shrink-0 flex-col border-r border-slate-800/40 bg-[#020617]/95 backdrop-blur-3xl shadow-2xl">
         <div className="flex flex-1 flex-col p-6 overflow-hidden">
@@ -180,7 +88,11 @@ function CodeGraphFlow() {
             {graph && (
               <FolderTree
                 nodes={graph.nodes}
-                collapsed={new Set()}
+                collapsed={new Set(
+                    graph.nodes
+                        .filter(n => (n.type === 'group' || n.type === 'folder') && !expandedFolders.has(n.id))
+                        .map(n => n.id)
+                )}
                 onToggle={toggleFolder} 
                 onFocus={() => {}}
               />
@@ -201,7 +113,7 @@ function CodeGraphFlow() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes as any}
+          edgeTypes={edgeTypes}
           connectionLineType={ConnectionLineType.Bezier}
           fitView
           colorMode="dark"
@@ -256,7 +168,7 @@ function CodeGraphFlow() {
                     <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                  </div>
                  <span className="text-[0.6rem] font-black uppercase tracking-widest text-slate-400">
-                     Dagre Engine Active
+                     ELK Layered Engine Active
                  </span>
             </div>
         </div>

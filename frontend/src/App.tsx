@@ -1,6 +1,5 @@
 import { useState } from "react"
 
-import "./App.css"
 import LandingPage from "@/pages/LandingPage"
 import OnboardPage from "@/pages/OnboardPage"
 import DashboardPage from "@/pages/DashboardPage"
@@ -12,7 +11,7 @@ function App() {
 
   return (
     <div className="dark min-h-screen bg-slate-950 text-slate-100 selection:bg-sky-500/30">
-      <div className="relative h-screen overflow-hidden flex flex-col">
+      <div className={`relative flex flex-col ${view === 'dashboard' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
         {/* Background glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(0.2_0.1_260/0.4),transparent_50%)]" />
 
@@ -37,7 +36,7 @@ function App() {
         </header>
 
         {/* ── Viewport ── */}
-        <main className="relative z-10 flex-1 overflow-hidden">
+        <main className={`relative z-10 flex-1 overflow-hidden ${view !== 'dashboard' ? 'overflow-y-auto custom-scrollbar' : ''}`}>
           {view === "landing" && (
             <LandingPage onStartAudit={() => setView("onboarding")} />
           )}

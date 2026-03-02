@@ -15,15 +15,17 @@ type GithubConnectProps = {
 
 function GithubConnect({ onBackToLanding, onAnalysisComplete }: GithubConnectProps) {
   const { url, setUrl, error, validate, parsed } = useGitHub()
-  const { project, analyzeRepository } = usePulseAI()
+  const { projectStore, analyzeRepository } = usePulseAI()
 
   React.useEffect(() => {
-    if (project.status === "success" && onAnalysisComplete) {
+    const active = projectStore.getActiveProject()
+    if (active?.status === "success" && onAnalysisComplete) {
       onAnalysisComplete()
     }
-  }, [project.status, onAnalysisComplete])
+  }, [projectStore, onAnalysisComplete])
 
-  const isLoading = project.status === "loading"
+  const activeProject = projectStore.getActiveProject()
+  const isLoading = activeProject?.status === "loading"
 
   return (
     <section className="flex flex-1 items-center justify-center pb-16 pt-8 px-6">
@@ -145,7 +147,7 @@ function GithubConnect({ onBackToLanding, onAnalysisComplete }: GithubConnectPro
           >
             <div className="flex items-center justify-between text-[0.7rem] uppercase tracking-widest text-slate-500 px-2 font-bold italic">
               <Sparkles className="h-3 w-3 text-sky-400 animate-pulse mr-2" />
-              <span className="flex-1">{project.analysisMessage}</span>
+              <span className="flex-1">{activeProject?.analysisMessage}</span>
               <span className="animate-pulse text-sky-500 ml-2">Active</span>
             </div>
             <div className="h-1 w-full overflow-hidden rounded-full bg-slate-900">

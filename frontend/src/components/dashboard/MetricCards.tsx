@@ -27,7 +27,10 @@ const item = {
 }
 
 function MetricCards() {
-  const { verdict, status } = useProjectStore()
+  const store = useProjectStore()
+  const project = store.getActiveProject()
+  const verdict = project?.verdict
+  const status: AnalysisStatus = project?.status ?? "idle"
 
   const isLoading = status === "loading"
   const isEmpty = !verdict && status === "idle"

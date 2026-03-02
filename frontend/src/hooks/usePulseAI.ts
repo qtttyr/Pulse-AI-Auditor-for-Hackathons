@@ -1,25 +1,29 @@
 import axios from "axios"
 import * as React from "react"
 
-import {
-  type AIVerdict,
-  type GraphData,
-  useProjectStore,
-} from "@/store/projectStore"
+import { type AIVerdict, type GraphData, useProjectStore } from "@/store/projectStore"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 
 export function usePulseAI() {
-  const project = useProjectStore()
+  const projectStore = useProjectStore()
 
   const analyzeRepository = React.useCallback(
     async (repoUrl: string) => {
       if (!repoUrl) {
-        project.setError("Enter a repository URL to start the analysis.")
+        // Ошибку показываем на текущем активном проекте (если он есть)
+        const active = projectStore.getActiveProject()
+        if (active) {
+          projectStore.updateProject(active.id, {
+            status: "error",
+            errorMessage: "Enter a repository URL to start the analysis.",
+          })
+        }
         return
       }
 
-      project.startAnalysis(repoUrl)
+      // Создаём новый проект и делаем его активным
+      const projectId = projectStore.addProject(repoUrl)
       
       // Cycle through helpful messages
       const messages = [
@@ -35,7 +39,9 @@ export function usePulseAI() {
       let msgIndex = 0
       const msgInterval = setInterval(() => {
         msgIndex = (msgIndex + 1) % messages.length
-        project.setAnalysisMessage(messages[msgIndex])
+        projectStore.updateProject(projectId, {
+          analysisMessage: messages[msgIndex],
+        })
       }, 5000)
 
       try {
@@ -47,9 +53,12 @@ export function usePulseAI() {
 
         clearInterval(msgInterval)
         const { nodes, edges, verdict } = response.data
-        project.setResult({
+        projectStore.updateProject(projectId, {
+          status: "success",
           verdict: verdict as AIVerdict,
           graph: { nodes, edges } as GraphData,
+          errorMessage: undefined,
+          analysisMessage: undefined,
         })
       } catch (error: unknown) {
         clearInterval(msgInterval)
@@ -59,17 +68,20 @@ export function usePulseAI() {
             if (error.code === 'ECONNABORTED') {
                 message = "The analysis is taking longer than expected. The repository might be too large."
             } else if (error.response?.data?.detail) {
-                message = error.response.data.detail
+              message = error.response.data.detail
             }
         }
-        project.setError(message)
+        projectStore.updateProject(projectId, {
+          status: "error",
+          errorMessage: message,
+        })
       }
     },
-    [project]
+    [projectStore]
   )
 
   return {
-    project,
+    projectStore,
     analyzeRepository,
   }
 }
