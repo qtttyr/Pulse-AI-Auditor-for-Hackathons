@@ -56,9 +56,12 @@ export function ProjectsSidebar() {
             Projects
           </h3>
         </div>
-        <span className="text-[0.6rem] text-slate-500 font-bold uppercase tracking-widest">
-          {ordered.length}
-        </span>
+        <button
+          onClick={() => store.clearStore()}
+          className="text-[0.55rem] font-bold text-slate-600 hover:text-rose-400 transition-colors uppercase tracking-widest px-2 py-1 rounded-md hover:bg-rose-500/10"
+        >
+          Clear History
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-4 custom-scrollbar">
         <div className="flex flex-col gap-1.5">
@@ -95,16 +98,23 @@ export function ProjectsSidebar() {
                     {statusLabel(project)}
                   </span>
                 </div>
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation()
                     store.deleteProject(project.id)
                   }}
-                  className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-800 bg-slate-900/70 text-slate-600 hover:border-rose-500/60 hover:text-rose-400 hover:bg-slate-900 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation()
+                      store.deleteProject(project.id)
+                    }
+                  }}
+                  className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-800 bg-slate-900/70 text-slate-600 hover:border-rose-500/60 hover:text-rose-400 hover:bg-slate-900 transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-3 w-3" />
-                </button>
+                </div>
               </button>
             )
           })}

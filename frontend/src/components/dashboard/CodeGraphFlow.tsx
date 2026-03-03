@@ -31,7 +31,12 @@ function CodeGraphFlow() {
   const store = useProjectStore()
   const project = store.getActiveProject()
   const graph = project?.graph
-  const collapsed = useMemo(() => project?.collapsedFolders ?? new Set<string>(), [project])
+  
+  // Use a stable Set for collapsed folders (stored as array in persist store)
+  const collapsed = useMemo(() => {
+    const list = project?.collapsedFolders || []
+    return new Set(Array.isArray(list) ? list : [])
+  }, [project?.collapsedFolders])
 
   // 1. Calculate expanded folders based on store status
   const expandedFolders = useMemo(() => {

@@ -3,6 +3,7 @@ import { useProjectStore } from "@/store/projectStore"
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader"
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel"
 import { LoadingOverlay } from "@/components/dashboard/LoadingOverlay"
+import { ReportExport } from "@/components/dashboard/ReportExport"
 
 function DashboardPage() {
   const store = useProjectStore()
@@ -24,6 +25,9 @@ function DashboardPage() {
 
       {/* Loading Overlay */}
       {status === "loading" && <LoadingOverlay />}
+
+      {/* Hidden Print Template */}
+      <ReportExport />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Gauge, Radar, ShieldAlert, Workflow } from "lucide-react"
+import { Gauge, Radar, ShieldAlert, Workflow } from "lucide-react";
 
 import {
   Card,
@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 function Features() {
   return (
@@ -16,7 +16,7 @@ function Features() {
           <div className="space-y-3">
             <p className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.18em] text-slate-400">
               Why judges care
-              <span className="h-px w-8 bg-gradient-to-r from-slate-700 to-sky-500/70" />
+              <span className="h-px w-8 bg-linear-to-r from-slate-700 to-sky-500/70" />
             </p>
             <h2 className="text-balance text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
               From raw repositories to a verdict-ready story in minutes.
@@ -31,7 +31,9 @@ function Features() {
             <p className="text-[0.65rem] uppercase tracking-[0.18em] text-slate-500">
               Powered by
             </p>
-            <p>OpenRouter (Trinity, Step 3.5) · Groq LLMs · Token Saver engine</p>
+            <p>
+              OpenRouter (Trinity, Step 3.5) · Groq LLMs · Token Saver engine
+            </p>
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -44,8 +46,8 @@ function Features() {
                 Instant repository x-ray
               </CardTitle>
               <CardDescription>
-                Skip manual browsing. See architecture layers, hotspots and
-                dead ends in one 3D view.
+                Skip manual browsing. See architecture layers, hotspots and dead
+                ends in one 3D view.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-1 text-[0.7rem] text-sky-200/80">
@@ -83,8 +85,8 @@ function Features() {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-1 text-[0.7rem] text-emerald-200/80">
-              AST-light mode extracts imports and function signatures from
-              heavy files.
+              AST-light mode extracts imports and function signatures from heavy
+              files.
             </CardContent>
           </Card>
           <Card className="border-amber-500/40 bg-slate-950/60">
@@ -108,7 +110,7 @@ function Features() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-export default Features
+export default Features;

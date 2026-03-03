@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useProjectStore } from "@/store/projectStore"
 
 import LandingPage from "@/pages/LandingPage"
 import OnboardPage from "@/pages/OnboardPage"
@@ -7,7 +8,33 @@ import DashboardPage from "@/pages/DashboardPage"
 type View = "landing" | "onboarding" | "dashboard"
 
 function App() {
+  const { activeProjectId, projects } = useProjectStore()
   const [view, setView] = useState<View>("landing")
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Listen for hydration (zustand persist)
+  useEffect(() => {
+    // Zustand persist middleware sets up a listener, but we can also just check if store is ready
+    // By default, if we use the store in a component, it might not be hydrated yet.
+    // However, persist has a `hasHydrated` state in newer versions or we can use a simple effect.
+    setIsHydrated(true)
+  }, [])
+
+  // Auto-redirect if project exists, but only after hydration
+  useEffect(() => {
+    if (isHydrated && activeProjectId && projects[activeProjectId]) {
+      setView("dashboard")
+    }
+  }, [isHydrated, activeProjectId, projects])
+
+  // If active project is deleted, go back to landing
+  useEffect(() => {
+    if (view === "dashboard" && (!activeProjectId || !projects[activeProjectId])) {
+      setView("landing")
+    }
+  }, [view, activeProjectId, projects])
+
+  if (!isHydrated) return null // Prevent flash of landing page if user should be on dashboard
 
   return (
     <div className="dark min-h-screen bg-slate-950 text-slate-100 selection:bg-sky-500/30">
@@ -18,18 +45,21 @@ function App() {
         {/* ── Navbar ── */}
         <header className="relative z-20 flex h-16 w-full shrink-0 items-center justify-between border-b border-slate-800/60 bg-slate-950/20 px-8 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 shadow-[0_0_20px_rgba(56,189,248,0.2)] overflow-hidden">
+            <div 
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 shadow-[0_0_20px_rgba(56,189,248,0.25)] overflow-hidden cursor-pointer hover:border-sky-500/50 transition-all hover:scale-105"
+              onClick={() => setView("landing")}
+            >
               <img src="/logo.png" alt="PULSE" className="h-full w-full object-cover" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-100">PULSE</span>
+              <span className="text-xs font-black uppercase tracking-[0.25em] text-slate-100 italic">PULSE</span>
               <span className="text-[0.55rem] font-bold text-slate-500">X-RAY ADVISOR</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <span className="hidden md:flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-slate-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" />
               Pulse Engine Online
             </span>
           </div>
