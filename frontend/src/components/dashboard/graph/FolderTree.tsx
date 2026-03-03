@@ -16,8 +16,7 @@ function FileItem({
   child: GraphNode
   onFocus: (id: string) => void
 }) {
-  // @ts-expect-error - backend data mapping
-  const fname = child.data?.label || child.label || child.id.split("/").pop() || ""
+  const fname = (child.data as Record<string, string>)?.label || child.label || child.id.split("/").pop() || ""
   const color = getExtColor(fname)
   return (
     <button
@@ -64,8 +63,7 @@ function FolderItem({
         )}
         <Layers className="h-3 w-3 shrink-0 text-sky-500/70" />
         <span className="truncate text-[0.65rem] font-bold uppercase tracking-widest text-slate-300 group-hover:text-sky-300">
-          {/* @ts-expect-error - backend data mapping */}
-          {folder.data?.label || folder.label || folder.id.split("/").pop()}
+          {(folder.data as Record<string, string>)?.label || folder.label || folder.id.split("/").pop()}
         </span>
         <span className="ml-auto shrink-0 text-[0.55rem] font-bold text-slate-600">
           {totalChildren}
@@ -82,8 +80,7 @@ function FolderItem({
             >
               <Layers className="h-2.5 w-2.5 shrink-0 text-violet-500/60" />
               <span className="truncate text-[0.6rem] font-semibold text-slate-500 group-hover:text-violet-300">
-                {/* @ts-expect-error - backend data mapping */}
-                {sf.data?.label || sf.label || sf.id.split("/").pop()}
+                {(sf.data as Record<string, string>)?.label || sf.label || sf.id.split("/").pop()}
               </span>
             </button>
           ))}

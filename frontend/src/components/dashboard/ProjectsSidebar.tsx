@@ -69,11 +69,17 @@ export function ProjectsSidebar() {
             const isActive = project.id === activeId
             const isLoading = project.status === "loading"
             return (
-              <button
+              <div
                 key={project.id}
-                type="button"
                 onClick={() => store.setActiveProject(project.id)}
-                className={`group flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-all ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    store.setActiveProject(project.id)
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                className={`group flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-all cursor-pointer ${
                   isActive
                     ? "border border-sky-500/60 bg-sky-500/10 shadow-[0_0_25px_rgba(56,189,248,0.25)]"
                     : "border border-slate-800 bg-slate-900/40 hover:border-sky-500/40 hover:bg-slate-900/70"
@@ -98,24 +104,17 @@ export function ProjectsSidebar() {
                     {statusLabel(project)}
                   </span>
                 </div>
-                <div
-                  role="button"
-                  tabIndex={0}
+                <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation()
                     store.deleteProject(project.id)
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.stopPropagation()
-                      store.deleteProject(project.id)
-                    }
-                  }}
                   className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-800 bg-slate-900/70 text-slate-600 hover:border-rose-500/60 hover:text-rose-400 hover:bg-slate-900 transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-3 w-3" />
-                </div>
-              </button>
+                </button>
+              </div>
             )
           })}
         </div>

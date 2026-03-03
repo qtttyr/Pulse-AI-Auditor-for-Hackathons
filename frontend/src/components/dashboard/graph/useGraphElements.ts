@@ -41,7 +41,7 @@ export function useGraphElements(
 
       if (isVisible) {
         visibleNodeIds.add(n.id)
-        const label = n.data?.label || n.label || n.id.split("/").pop() || ""
+        const label = (n.data as Record<string, string>)?.label || n.label || n.id.split("/").pop() || ""
         const color = isFolder ? "transparent" : getExtColor(label)
         const ext = isFolder ? "" : getExt(label)
         const childCount = nodesInStore.filter(node => node.parentId === n.id).length
